@@ -11,30 +11,48 @@ class SnakeGame {
         this.snake = [{ x: this.tileSize * 5, y: this.tileSize * 5 }];
         this.direction = { x: 0, y: 0 };
         this.bait = { x: 0, y: 0 };
+        this.baitType = "normal"; // Başlangıçta normal yem
         this.score = 0;
-        this.highScore = 0; // Yeni değişken
+        this.highScore = 0;
+        this.speed = 100; // Başlangıç hızı (ms)
         this.growing = false;
         this.isGameOver = false;
 
         this.placeBait();
         this.bindEvents();
-        this.gameLoop = setInterval(() => this.update(), 100);
+        this.gameLoop = setInterval(() => this.update(), this.speed);
     }
 
     placeBait() {
         this.bait.x = Math.floor(Math.random() * (this.canvasWidth / this.tileSize)) * this.tileSize;
         this.bait.y = Math.floor(Math.random() * (this.canvasHeight / this.tileSize)) * this.tileSize;
 
+        // %20 şansla altın yem
+        this.baitType = Math.random() > 0.8 ? "gold" : "normal";
+
+        // Yemin yılanın üstüne düşmediğinden emin olun
         if (this.snake.some(segment => segment.x === this.bait.x && segment.y === this.bait.y)) {
             this.placeBait();
         }
     }
 
     updateScore() {
-        this.score++;
+        if (this.baitType === "gold") {
+            this.score += 5; // Altın yem 5 puan
+        } else {
+            this.score++; // Normal yem 1 puan
+        }
+
         if (this.score > this.highScore) {
             this.highScore = this.score;
         }
+
+        // Hızı artır (minimum 50 ms)
+        this.speed = Math.max(50, 100 - this.score);
+        clearInterval(this.gameLoop);
+        this.gameLoop = setInterval(() => this.update(), this.speed);
+
+        // Skor tablosunu güncelle
         this.scoreBoard.textContent = `Score: ${this.score} | High Score: ${this.highScore}`;
     }
 
@@ -129,7 +147,8 @@ class SnakeGame {
             }
         });
 
-        this.ctx.fillStyle = 'red';
+        // Bait türüne göre renk
+        this.ctx.fillStyle = this.baitType === "gold" ? 'yellow' : 'red';
         this.ctx.fillRect(this.bait.x, this.bait.y, this.tileSize, this.tileSize);
     }
 
@@ -168,13 +187,11 @@ class SnakeGame {
         this.isGameOver = true;
         clearInterval(this.gameLoop);
 
-        // Metin stili
-        this.ctx.fillStyle = 'white'; // Yazı rengi
-        this.ctx.font = '30px Arial'; // Yazı boyutu ve font
-        this.ctx.textAlign = 'center'; // Ortala
-        this.ctx.textBaseline = 'middle'; // Dikeyde ortala
+        this.ctx.fillStyle = 'white';
+        this.ctx.font = '30px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
 
-        // Yazıyı tam ortaya yerleştir
         this.ctx.fillText(
             'Game Over! Press any key to restart.',
             this.canvasWidth / 2,
@@ -186,10 +203,11 @@ class SnakeGame {
         this.snake = [{ x: this.tileSize * 5, y: this.tileSize * 5 }];
         this.direction = { x: 0, y: 0 };
         this.score = 0;
+        this.speed = 100;
         this.scoreBoard.textContent = `Score: ${this.score} | High Score: ${this.highScore}`;
         this.isGameOver = false;
         this.placeBait();
-        this.gameLoop = setInterval(() => this.update(), 100);
+        this.gameLoop = setInterval(() => this.update(), this.speed);
     }
 
     update() {
