@@ -13,13 +13,14 @@ class SnakeGame {
         this.bait = { x: 0, y: 0 };
         this.score = 0;
         this.growing = false;
+        this.isGameOver = false; // Oyun durumu
 
         this.placeBait();
         this.bindEvents();
         this.gameLoop = setInterval(() => this.update(), 100);
     }
 
-    // Yerleştirme mantığı
+    // Yem yerleştirme
     placeBait() {
         this.bait.x = Math.floor(Math.random() * (this.canvasWidth / this.tileSize)) * this.tileSize;
         this.bait.y = Math.floor(Math.random() * (this.canvasHeight / this.tileSize)) * this.tileSize;
@@ -36,9 +37,15 @@ class SnakeGame {
         this.scoreBoard.textContent = `Score: ${this.score}`;
     }
 
-    // Klavye kontrolünü bağlama
+    // Klavye kontrolü bağlama
     bindEvents() {
         document.addEventListener('keydown', (e) => {
+            if (this.isGameOver) {
+                // Oyun bittiyse herhangi bir tuşla yeniden başlat
+                this.resetGame();
+                return;
+            }
+
             switch (e.key) {
                 case 'ArrowUp':
                 case 'w':
@@ -64,7 +71,7 @@ class SnakeGame {
         });
     }
 
-    // Yılanın başını ve gözlerini çizme
+    // Yılanın başını, gözlerini ve dilini çizme
     drawHead(x, y) {
         const eyeRadius = 3;
         const eyeOffsetX = 6;
@@ -112,7 +119,7 @@ class SnakeGame {
         this.ctx.fill();
     }
 
-    // Çizim
+    // Yılan çizimi
     draw() {
         this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
@@ -148,13 +155,13 @@ class SnakeGame {
 
         // Duvar çarpması
         if (head.x < 0 || head.y < 0 || head.x >= this.canvasWidth || head.y >= this.canvasHeight) {
-            this.resetGame();
+            this.endGame();
         }
 
         // Kendi kendine çarpma
         for (let i = 1; i < this.snake.length; i++) {
             if (this.snake[i].x === head.x && this.snake[i].y === head.y) {
-                this.resetGame();
+                this.endGame();
             }
         }
 
@@ -166,17 +173,36 @@ class SnakeGame {
         }
     }
 
-    // Sıfırlama
+    // Oyun bitişi
+    endGame() {
+        this.isGameOver = true;
+        clearInterval(this.gameLoop);
+
+        // Game over mesajı
+        this.ctx.fillStyle = 'white'; // Yazı rengi
+        this.ctx.font = '24px Arial'; // Yazı stili ve boyutu
+        this.ctx.textAlign = 'center'; // Ortalanmış metin
+        this.ctx.fillText(
+            'Game Over! Press any key to restart.',
+            this.canvasWidth / 2,
+            this.canvasHeight / 2
+        );
+    }
+
+    // Oyunu sıfırla
     resetGame() {
         this.snake = [{ x: this.tileSize * 5, y: this.tileSize * 5 }];
         this.direction = { x: 0, y: 0 };
         this.score = 0;
         this.scoreBoard.textContent = 'Score: 0';
+        this.isGameOver = false;
         this.placeBait();
+        this.gameLoop = setInterval(() => this.update(), 100);
     }
 
     // Güncelleme döngüsü
     update() {
+        if (this.isGameOver) return;
         this.moveSnake();
         this.checkCollisions();
         this.draw();
