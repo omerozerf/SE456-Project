@@ -1,5 +1,6 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const scoreBoard = document.getElementById('scoreBoard'); // Skor göstergesi
 
 const canvasWidth = canvas.width;
 const canvasHeight = canvas.height;
@@ -9,6 +10,7 @@ let snake = [{ x: tileSize * 5, y: tileSize * 5 }];
 let direction = { x: 0, y: 0 };
 let bait = { x: 0, y: 0 };
 let growing = false;
+let score = 0; // Skor başlangıç değeri
 
 // Initialize bait
 function placeBait() {
@@ -19,6 +21,12 @@ function placeBait() {
     if (snake.some(segment => segment.x === bait.x && segment.y === bait.y)) {
         placeBait();
     }
+}
+
+// Update score
+function updateScore() {
+    score++;
+    scoreBoard.textContent = `Score: ${score}`;
 }
 
 // Draw the canvas elements
@@ -100,6 +108,7 @@ function checkCollisions() {
     // Bait collision
     if (head.x === bait.x && head.y === bait.y) {
         growing = true;
+        updateScore(); // Skoru artır
         placeBait();
     }
 }
@@ -108,6 +117,8 @@ function checkCollisions() {
 function resetGame() {
     snake = [{ x: tileSize * 5, y: tileSize * 5 }];
     direction = { x: 0, y: 0 };
+    score = 0; // Skoru sıfırla
+    scoreBoard.textContent = 'Score: 0'; // Skor metnini güncelle
     placeBait();
 }
 
