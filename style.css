@@ -22,10 +22,10 @@ canvas {
 
 #gameInfo {
     position: absolute;
-    right: 10px; /* Sağdan 10px mesafe */
-    bottom: 10px; /* Aşağıdan 10px mesafe */
-    color: white; /* Metin rengi */
-    font-size: 16px; /* Yazı boyutu */
-    font-family: Arial, sans-serif; /* Yazı tipi */
-    text-align: right; /* Metni sağa hizalayalım */
+    right: 10px;
+    bottom: 10px;
+    color: white;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    text-align: right;
 }

@@ -11,10 +11,10 @@ class SnakeGame {
         this.snake = [{ x: this.tileSize * 5, y: this.tileSize * 5 }];
         this.direction = { x: 0, y: 0 };
         this.bait = { x: 0, y: 0 };
-        this.baitType = "normal"; // Başlangıçta normal yem
+        this.baitType = "normal";
         this.score = 0;
         this.highScore = 0;
-        this.speed = 100; // Başlangıç hızı (ms)
+        this.speed = 100;
         this.growing = false;
         this.isGameOver = false;
 
@@ -27,10 +27,8 @@ class SnakeGame {
         this.bait.x = Math.floor(Math.random() * (this.canvasWidth / this.tileSize)) * this.tileSize;
         this.bait.y = Math.floor(Math.random() * (this.canvasHeight / this.tileSize)) * this.tileSize;
 
-        // %20 şansla altın yem
         this.baitType = Math.random() > 0.8 ? "gold" : "normal";
 
-        // Yemin yılanın üstüne düşmediğinden emin olun
         if (this.snake.some(segment => segment.x === this.bait.x && segment.y === this.bait.y)) {
             this.placeBait();
         }
@@ -38,21 +36,19 @@ class SnakeGame {
 
     updateScore() {
         if (this.baitType === "gold") {
-            this.score += 5; // Altın yem 5 puan
+            this.score += 5;
         } else {
-            this.score++; // Normal yem 1 puan
+            this.score++;
         }
 
         if (this.score > this.highScore) {
             this.highScore = this.score;
         }
 
-        // Hızı artır (minimum 50 ms)
         this.speed = Math.max(50, 100 - this.score);
         clearInterval(this.gameLoop);
         this.gameLoop = setInterval(() => this.update(), this.speed);
 
-        // Skor tablosunu güncelle
         this.scoreBoard.textContent = `Score: ${this.score} | High Score: ${this.highScore}`;
     }
 
@@ -147,7 +143,6 @@ class SnakeGame {
             }
         });
 
-        // Bait türüne göre renk
         this.ctx.fillStyle = this.baitType === "gold" ? 'yellow' : 'red';
         this.ctx.fillRect(this.bait.x, this.bait.y, this.tileSize, this.tileSize);
     }
