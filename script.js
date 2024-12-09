@@ -115,6 +115,8 @@ class SnakeGame {
     }
 
     draw() {
+        if (this.isGameOver) return;
+
         this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
         this.snake.forEach((segment, index) => {
@@ -166,9 +168,13 @@ class SnakeGame {
         this.isGameOver = true;
         clearInterval(this.gameLoop);
 
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = '24px Arial';
-        this.ctx.textAlign = 'center';
+        // Metin stili
+        this.ctx.fillStyle = 'white'; // Yazı rengi
+        this.ctx.font = '30px Arial'; // Yazı boyutu ve font
+        this.ctx.textAlign = 'center'; // Ortala
+        this.ctx.textBaseline = 'middle'; // Dikeyde ortala
+
+        // Yazıyı tam ortaya yerleştir
         this.ctx.fillText(
             'Game Over! Press any key to restart.',
             this.canvasWidth / 2,
