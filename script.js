@@ -1,152 +1,187 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const scoreBoard = document.getElementById('scoreBoard'); // Skor göstergesi
+class SnakeGame {
+    constructor(canvasId, scoreBoardId) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d');
+        this.scoreBoard = document.getElementById(scoreBoardId);
 
-const canvasWidth = canvas.width;
-const canvasHeight = canvas.height;
+        this.tileSize = 20;
+        this.canvasWidth = this.canvas.width;
+        this.canvasHeight = this.canvas.height;
 
-const tileSize = 20;
-let snake = [{ x: tileSize * 5, y: tileSize * 5 }];
-let direction = { x: 0, y: 0 };
-let bait = { x: 0, y: 0 };
-let growing = false;
-let score = 0; // Skor başlangıç değeri
+        this.snake = [{ x: this.tileSize * 5, y: this.tileSize * 5 }];
+        this.direction = { x: 0, y: 0 };
+        this.bait = { x: 0, y: 0 };
+        this.score = 0;
+        this.growing = false;
 
-// Initialize bait
-function placeBait() {
-    bait.x = Math.floor(Math.random() * (canvasWidth / tileSize)) * tileSize;
-    bait.y = Math.floor(Math.random() * (canvasHeight / tileSize)) * tileSize;
-
-    // Prevent bait from appearing inside the snake
-    if (snake.some(segment => segment.x === bait.x && segment.y === bait.y)) {
-        placeBait();
-    }
-}
-
-// Update score
-function updateScore() {
-    score++;
-    scoreBoard.textContent = `Score: ${score}`;
-}
-
-// Draw the canvas elements
-function draw() {
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-    // Draw the snake with gradient effect
-    snake.forEach((segment, index) => {
-        const colorStrength = 100 - (index / snake.length) * 100; // Closer to the head = brighter
-        ctx.fillStyle = `hsl(120, 100%, ${colorStrength}%)`; // Green hue (120° in HSL)
-        ctx.fillRect(segment.x, segment.y, tileSize, tileSize);
-
-        // Draw eyes on the head (index 0)
-        if (index === 0) {
-            drawEyes(segment.x, segment.y);
-        }
-    });
-
-    // Draw the bait
-    ctx.fillStyle = 'red';
-    ctx.fillRect(bait.x, bait.y, tileSize, tileSize);
-}
-
-// Function to draw eyes on the snake's head
-function drawEyes(x, y) {
-    const eyeRadius = 3;
-    const eyeOffsetX = 6; // Horizontal distance of eyes from the center
-    const eyeOffsetY = 5; // Vertical distance of eyes from the center
-
-    ctx.fillStyle = 'white'; // Eye color
-    ctx.beginPath();
-    ctx.arc(x + eyeOffsetX, y + eyeOffsetY, eyeRadius, 0, Math.PI * 2); // Left eye
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(x + tileSize - eyeOffsetX, y + eyeOffsetY, eyeRadius, 0, Math.PI * 2); // Right eye
-    ctx.fill();
-
-    ctx.fillStyle = 'black'; // Pupil color
-    ctx.beginPath();
-    ctx.arc(x + eyeOffsetX, y + eyeOffsetY, eyeRadius / 2, 0, Math.PI * 2); // Left pupil
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(x + tileSize - eyeOffsetX, y + eyeOffsetY, eyeRadius / 2, 0, Math.PI * 2); // Right pupil
-    ctx.fill();
-}
-
-// Move the snake
-function moveSnake() {
-    const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
-
-    // Add the new head
-    snake.unshift(head);
-
-    // Check if growing
-    if (growing) {
-        growing = false;
-    } else {
-        // Remove the last piece of the snake
-        snake.pop();
-    }
-}
-
-// Check for collisions
-function checkCollisions() {
-    const head = snake[0];
-
-    // Wall collision
-    if (head.x < 0 || head.y < 0 || head.x >= canvasWidth || head.y >= canvasHeight) {
-        resetGame();
+        this.placeBait();
+        this.bindEvents();
+        this.gameLoop = setInterval(() => this.update(), 100);
     }
 
-    // Self collision
-    for (let i = 1; i < snake.length; i++) {
-        if (snake[i].x === head.x && snake[i].y === head.y) {
-            resetGame();
+    // Yerleştirme mantığı
+    placeBait() {
+        this.bait.x = Math.floor(Math.random() * (this.canvasWidth / this.tileSize)) * this.tileSize;
+        this.bait.y = Math.floor(Math.random() * (this.canvasHeight / this.tileSize)) * this.tileSize;
+
+        // Yem yılanın üstünde mi kontrol
+        if (this.snake.some(segment => segment.x === this.bait.x && segment.y === this.bait.y)) {
+            this.placeBait();
         }
     }
 
-    // Bait collision
-    if (head.x === bait.x && head.y === bait.y) {
-        growing = true;
-        updateScore(); // Skoru artır
-        placeBait();
+    // Skor güncelleme
+    updateScore() {
+        this.score++;
+        this.scoreBoard.textContent = `Score: ${this.score}`;
+    }
+
+    // Klavye kontrolünü bağlama
+    bindEvents() {
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    if (this.direction.y === 0) this.direction = { x: 0, y: -this.tileSize };
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    if (this.direction.y === 0) this.direction = { x: 0, y: this.tileSize };
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    if (this.direction.x === 0) this.direction = { x: -this.tileSize, y: 0 };
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    if (this.direction.x === 0) this.direction = { x: this.tileSize, y: 0 };
+                    break;
+            }
+        });
+    }
+
+    // Yılanın başını ve gözlerini çizme
+    drawHead(x, y) {
+        const eyeRadius = 3;
+        const eyeOffsetX = 6;
+        const eyeOffsetY = 5;
+        const tongueLength = 10;
+
+        // Baş
+        this.ctx.fillStyle = '#00FF00';
+        this.ctx.fillRect(x, y, this.tileSize, this.tileSize);
+
+        // Dil
+        this.ctx.strokeStyle = 'red';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        if (this.direction.x === this.tileSize) {
+            this.ctx.moveTo(x + this.tileSize, y + this.tileSize / 2);
+            this.ctx.lineTo(x + this.tileSize + tongueLength, y + this.tileSize / 2);
+        } else if (this.direction.x === -this.tileSize) {
+            this.ctx.moveTo(x, y + this.tileSize / 2);
+            this.ctx.lineTo(x - tongueLength, y + this.tileSize / 2);
+        } else if (this.direction.y === this.tileSize) {
+            this.ctx.moveTo(x + this.tileSize / 2, y + this.tileSize);
+            this.ctx.lineTo(x + this.tileSize / 2, y + this.tileSize + tongueLength);
+        } else if (this.direction.y === -this.tileSize) {
+            this.ctx.moveTo(x + this.tileSize / 2, y);
+            this.ctx.lineTo(x + this.tileSize / 2, y - tongueLength);
+        }
+        this.ctx.stroke();
+
+        // Gözler
+        this.ctx.fillStyle = 'white';
+        this.ctx.beginPath();
+        this.ctx.arc(x + eyeOffsetX, y + eyeOffsetY, eyeRadius, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.beginPath();
+        this.ctx.arc(x + this.tileSize - eyeOffsetX, y + eyeOffsetY, eyeRadius, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        this.ctx.fillStyle = 'black';
+        this.ctx.beginPath();
+        this.ctx.arc(x + eyeOffsetX, y + eyeOffsetY, eyeRadius / 2, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.beginPath();
+        this.ctx.arc(x + this.tileSize - eyeOffsetX, y + eyeOffsetY, eyeRadius / 2, 0, Math.PI * 2);
+        this.ctx.fill();
+    }
+
+    // Çizim
+    draw() {
+        this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+
+        this.snake.forEach((segment, index) => {
+            if (index === 0) {
+                this.drawHead(segment.x, segment.y);
+            } else {
+                const colorStrength = 100 - (index / this.snake.length) * 100;
+                this.ctx.fillStyle = `hsl(120, 100%, ${colorStrength}%)`;
+                this.ctx.fillRect(segment.x, segment.y, this.tileSize, this.tileSize);
+            }
+        });
+
+        this.ctx.fillStyle = 'red';
+        this.ctx.fillRect(this.bait.x, this.bait.y, this.tileSize, this.tileSize);
+    }
+
+    // Yılan hareketi
+    moveSnake() {
+        const head = { x: this.snake[0].x + this.direction.x, y: this.snake[0].y + this.direction.y };
+        this.snake.unshift(head);
+
+        if (!this.growing) {
+            this.snake.pop();
+        } else {
+            this.growing = false;
+        }
+    }
+
+    // Çarpışma kontrolü
+    checkCollisions() {
+        const head = this.snake[0];
+
+        // Duvar çarpması
+        if (head.x < 0 || head.y < 0 || head.x >= this.canvasWidth || head.y >= this.canvasHeight) {
+            this.resetGame();
+        }
+
+        // Kendi kendine çarpma
+        for (let i = 1; i < this.snake.length; i++) {
+            if (this.snake[i].x === head.x && this.snake[i].y === head.y) {
+                this.resetGame();
+            }
+        }
+
+        // Yem yeme
+        if (head.x === this.bait.x && head.y === this.bait.y) {
+            this.growing = true;
+            this.updateScore();
+            this.placeBait();
+        }
+    }
+
+    // Sıfırlama
+    resetGame() {
+        this.snake = [{ x: this.tileSize * 5, y: this.tileSize * 5 }];
+        this.direction = { x: 0, y: 0 };
+        this.score = 0;
+        this.scoreBoard.textContent = 'Score: 0';
+        this.placeBait();
+    }
+
+    // Güncelleme döngüsü
+    update() {
+        this.moveSnake();
+        this.checkCollisions();
+        this.draw();
     }
 }
 
-// Reset the game
-function resetGame() {
-    snake = [{ x: tileSize * 5, y: tileSize * 5 }];
-    direction = { x: 0, y: 0 };
-    score = 0; // Skoru sıfırla
-    scoreBoard.textContent = 'Score: 0'; // Skor metnini güncelle
-    placeBait();
-}
-
-// Keyboard control
-document.addEventListener('keydown', (e) => {
-    switch (e.key) {
-        case 'ArrowUp':
-            if (direction.y === 0) direction = { x: 0, y: -tileSize };
-            break;
-        case 'ArrowDown':
-            if (direction.y === 0) direction = { x: 0, y: tileSize };
-            break;
-        case 'ArrowLeft':
-            if (direction.x === 0) direction = { x: -tileSize, y: 0 };
-            break;
-        case 'ArrowRight':
-            if (direction.x === 0) direction = { x: tileSize, y: 0 };
-            break;
-    }
-});
-
-// Main game loop
-function gameLoop() {
-    moveSnake();
-    checkCollisions();
-    draw();
-}
-
-// Initialize game
-placeBait();
-setInterval(gameLoop, 100);
+// Oyun Başlatma
+const game = new SnakeGame('gameCanvas', 'scoreBoard');
