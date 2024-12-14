@@ -1,5 +1,3 @@
-Here’s the README in English:
-
 Snake Game 🎮
 
 A modern JavaScript version of the classic Snake Game! This browser-based game features dynamic gameplay, sleek design, and adaptive speed mechanics to keep you engaged.
@@ -54,5 +52,3 @@ This project was developed by Ömer Faruk Özer.
 📝 License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
-
-Let me know if you’d like to tweak any part of the README or if there’s more to add! 😊
