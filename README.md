@@ -24,8 +24,8 @@ A modern JavaScript version of the classic Snake Game! This browser-based game f
 🚀 How to Run?
 1.	Clone the project to your local machine or download it as a ZIP file:
 
-git clone https://github.com/username/snake-game.git
-cd snake-game
+git clone https://github.com/omerozerf/SE456-Project.git
+cd SE456-Project
 		
 2.	Open the index.html file in any modern browser.
 
